@@ -1,8 +1,10 @@
 ﻿from flask import Flask
 from flask import request
+from flask.ext.autoindex import AutoIndex
 import codecs
 import time
 app = Flask(__name__)
+idx = AutoIndex(app, '/data', add_url_rules=False)
 
 #if app.debug is not True:
 if not app.debug:
@@ -32,14 +34,14 @@ if not app.debug:
 
 @app.route("/link2aleph")
 
-def hello():
+def createLink():
     pid = request.args.get('pid')
     sysno = request.args.get('sysno')
     base = request.args.get('base')
     
     addLine = True
     date = (time.strftime("%d.%m.%Y"))
-    fileName = base + "_" + date
+    fileName = "/data/" + base + "_" + date + ".txt"
     link = "http://kramerius.mzk.cz/search/handle/uuid:" + pid
     record = sysno + " 85641 L $$u" + link + u"$$yDigitalizovaný dokument"
     
@@ -55,6 +57,11 @@ def hello():
     with codecs.open(fileName, "w", "utf-8") as f:
         f.writelines(lines)
     return link
+
+@app.route('/index')
+@app.route('/index/<path:path>')
+def autoindex(path='.'):
+    return idx.render_autoindex(path)
 
 if __name__ == "__main__":
     #app.debug = True
